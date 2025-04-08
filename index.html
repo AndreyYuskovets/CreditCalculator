@@ -1,160 +1,181 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Кредитный калькулятор</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Кредитный Калькулятор</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 800px;
+      margin: auto;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
 
-        .container {
-            max-width: 800px;
-            margin: auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
+    h1 {
+      text-align: center;
+    }
 
-        h1 {
-            text-align: center;
-            color: #333;
-        }
+    label,
+    input,
+    button {
+      display: block;
+      width: 100%;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
 
-        label {
-            font-size: 14px;
-            margin: 10px 0;
-        }
+    #simulator {
+      margin-top: 2rem;
+    }
 
-        input[type="number"], input[type="button"] {
-            width: 100%;
-            padding: 10px;
-            font-size: 16px;
-            margin-bottom: 15px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+    }
 
-        input[type="button"] {
-            background-color: #4CAF50;
-            color: white;
-            cursor: pointer;
-        }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.75rem;
+      text-align: left;
+    }
 
-        input[type="button"]:hover {
-            background-color: #45a049;
-        }
+    th {
+      background-color: #eee;
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
+    .hidden {
+      display: none;
+    }
 
-        table th, table td {
-            padding: 10px;
-            border: 1px solid #ddd;
-            text-align: center;
-        }
-
-        table th {
-            background-color: #f2f2f2;
-        }
-
-        /* Адаптивность для мобильных устройств */
-        @media (max-width: 600px) {
-            .container {
-                padding: 10px;
-                width: 100%;
-            }
-            .table {
-                width: 100%;
-                font-size: 12px;
-            }
-        }
-    </style>
+    .input-group {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
 </head>
 <body>
+  <h1>Кредитный Калькулятор</h1>
 
-    <div class="container">
-        <h1>Кредитный калькулятор</h1>
+  <div class="input-group">
+    <label for="loanAmount">Сумма кредита:</label>
+    <input type="number" id="loanAmount" value="170000" placeholder="Например, 170000" />
+  </div>
 
-        <label for="loanAmount">Сумма кредита:</label>
-        <input type="number" id="loanAmount" value="170000" />
+  <div class="input-group">
+    <label for="initialRate">Процентная ставка первые 6 месяцев (%):</label>
+    <input type="number" id="initialRate" value="6" placeholder="6" />
+  </div>
 
-        <label for="firstPeriodInterest">Процент на первые полгода:</label>
-        <input type="number" id="firstPeriodInterest" value="6" />
+  <div class="input-group">
+    <label for="laterRate">Процентная ставка после 6 месяцев (%):</label>
+    <input type="number" id="laterRate" value="17.5" placeholder="17.5" />
+  </div>
 
-        <label for="secondPeriodInterest">Процент на оставшийся период:</label>
-        <input type="number" id="secondPeriodInterest" value="17.5" />
+  <button onclick="startSimulation()">Начать расчёт</button>
 
-        <input type="button" value="Рассчитать" id="calculateButton" onclick="calculateLoan()" />
+  <div id="simulator" class="hidden">
+    <table>
+      <thead>
+        <tr>
+          <th>Месяц</th>
+          <th>Остаток долга (₽)</th>
+          <th>Проценты (₽)</th>
+          <th>Мин. платёж (₽)</th>
+          <th>Ваш платёж (₽)</th>
+        </tr>
+      </thead>
+      <tbody id="logBody"></tbody>
+    </table>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Месяц</th>
-                    <th>Платеж</th>
-                    <th>Проценты</th>
-                    <th>Основной долг</th>
-                    <th>Остаток</th>
-                </tr>
-            </thead>
-            <tbody id="resultTable">
-                <!-- Результаты будут вставлены сюда -->
-            </tbody>
-        </table>
-    </div>
+    <label for="paymentInput">Сколько вы платите в этом месяце?</label>
+    <input type="number" id="paymentInput" />
+    <button onclick="nextMonth()">Далее</button>
+  </div>
 
-    <script>
-        function calculateLoan() {
-            const loanAmount = parseFloat(document.getElementById("loanAmount").value);
-            const firstPeriodInterest = parseFloat(document.getElementById("firstPeriodInterest").value) / 100;
-            const secondPeriodInterest = parseFloat(document.getElementById("secondPeriodInterest").value) / 100;
-            const monthsInFirstPeriod = 6;
-            const monthsInSecondPeriod = 24;
+  <script>
+    let loanAmount = 170000;
+    let months = 240;
+    let principalPerMonth = 0;
+    let balance = 0;
+    let month = 1;
+    let initialRate = 0.06; // Начальный процент по умолчанию 6%
+    let laterRate = 0.175; // Процент после первых 6 месяцев по умолчанию 17.5%
 
-            // Массив для хранения результатов
-            const results = [];
-            let remainingAmount = loanAmount;
+    const logBody = document.getElementById("logBody");
 
-            // Рассчитываем первые 6 месяцев
-            for (let month = 1; month <= monthsInFirstPeriod; month++) {
-                const interestPayment = remainingAmount * firstPeriodInterest / 12;
-                const principalPayment = (loanAmount / monthsInFirstPeriod) + interestPayment;
-                remainingAmount -= (loanAmount / monthsInFirstPeriod);
-                results.push([month, principalPayment.toFixed(2), interestPayment.toFixed(2), (loanAmount / monthsInFirstPeriod).toFixed(2), remainingAmount.toFixed(2)]);
-            }
+    function logRow(month, balance, interest, minPayment, userPayment) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${month}</td>
+        <td>${balance.toFixed(2)}</td>
+        <td>${interest.toFixed(2)}</td>
+        <td>${minPayment.toFixed(2)}</td>
+        <td>${userPayment.toFixed(2)}</td>
+      `;
+      logBody.appendChild(tr);
+    }
 
-            // Рассчитываем оставшийся период (18 месяцев)
-            for (let month = monthsInFirstPeriod + 1; month <= monthsInFirstPeriod + monthsInSecondPeriod; month++) {
-                const interestPayment = remainingAmount * secondPeriodInterest / 12;
-                const principalPayment = (loanAmount / monthsInSecondPeriod) + interestPayment;
-                remainingAmount -= (loanAmount / monthsInSecondPeriod);
-                results.push([month, principalPayment.toFixed(2), interestPayment.toFixed(2), (loanAmount / monthsInSecondPeriod).toFixed(2), remainingAmount.toFixed(2)]);
-            }
+    function startSimulation() {
+      loanAmount = parseFloat(document.getElementById("loanAmount").value);
+      initialRate = parseFloat(document.getElementById("initialRate").value) / 100 || 0.06;
+      laterRate = parseFloat(document.getElementById("laterRate").value) / 100 || 0.175;
+      
+      if (isNaN(loanAmount) || loanAmount <= 0) {
+        alert("Введите корректную сумму кредита.");
+        return;
+      }
 
-            // Вставляем результаты в таблицу
-            const resultTable = document.getElementById("resultTable");
-            resultTable.innerHTML = "";
+      balance = loanAmount;
+      principalPerMonth = +(loanAmount / months).toFixed(2);
+      month = 1;
+      document.getElementById("simulator").classList.remove("hidden");
+      logBody.innerHTML = "";
+      showMonthInfo();
+    }
 
-            results.forEach(result => {
-                const row = document.createElement("tr");
-                result.forEach(cell => {
-                    const td = document.createElement("td");
-                    td.textContent = cell;
-                    row.appendChild(td);
-                });
-                resultTable.appendChild(row);
-            });
-        }
-    </script>
+    function getCurrentRate(month) {
+      return month <= 6 ? initialRate / 12 : laterRate / 12;
+    }
 
+    function showMonthInfo() {
+      const rate = getCurrentRate(month);
+      const interest = +(balance * rate).toFixed(2);
+      const minPayment = +(principalPerMonth + interest).toFixed(2);
+      document.getElementById("paymentInput").value = minPayment;
+    }
+
+    function nextMonth() {
+      const rate = getCurrentRate(month);
+      const interest = +(balance * rate).toFixed(2);
+      const payment = parseFloat(document.getElementById("paymentInput").value);
+
+      if (isNaN(payment) || payment <= 0) {
+        alert("Введите корректную сумму платежа.");
+        return;
+      }
+
+      const toPrincipal = Math.max(payment - interest, 0);
+      balance = +(balance - toPrincipal).toFixed(2);
+      if (balance < 0) balance = 0;
+
+      const minPayment = +(principalPerMonth + interest).toFixed(2);
+      logRow(month, balance, interest, minPayment, payment);
+
+      if (balance <= 0) {
+        alert(`Кредит полностью погашен за ${month} месяцев!`);
+        document.getElementById("paymentInput").disabled = true;
+        return;
+      }
+
+      month++;
+      showMonthInfo();
+    }
+  </script>
 </body>
 </html>
