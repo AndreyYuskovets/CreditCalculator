@@ -1,195 +1,181 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Кредитный калькулятор</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            max-width: 800px;
-            margin: auto;
-            padding: 2rem;
-            background: #f5f5f5;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Кредитный Калькулятор</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 800px;
+      margin: auto;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
 
-        h1 {
-            text-align: center;
-        }
+    h1 {
+      text-align: center;
+    }
 
-        label,
-        input,
-        button {
-            display: block;
-            width: 100%;
-            margin-bottom: 1rem;
-            font-size: 1rem;
-        }
+    label,
+    input,
+    button {
+      display: block;
+      width: 100%;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
 
-        #simulator {
-            margin-top: 2rem;
-        }
+    #simulator {
+      margin-top: 2rem;
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #fff;
-            border-radius: 8px;
-            overflow: hidden;
-        }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+    }
 
-        th, td {
-            border: 1px solid #ccc;
-            padding: 0.75rem;
-            text-align: left;
-        }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.75rem;
+      text-align: left;
+    }
 
-        th {
-            background-color: #eee;
-        }
+    th {
+      background-color: #eee;
+    }
 
-        .hidden {
-            display: none;
-        }
+    .hidden {
+      display: none;
+    }
 
-        .input-group {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* Медиазапросы для мобильных устройств */
-        @media (max-width: 600px) {
-            body {
-                padding: 1rem;
-            }
-
-            h1 {
-                font-size: 1.5rem;
-            }
-
-            label, input, button {
-                font-size: 0.9rem;
-            }
-
-            .input-group {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            table th, table td {
-                font-size: 0.9rem;
-                padding: 0.5rem;
-            }
-
-            button {
-                font-size: 1rem;
-                padding: 0.75rem;
-            }
-        }
-    </style>
+    .input-group {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
 </head>
 <body>
-    <h1>Кредитный калькулятор</h1>
+  <h1>Кредитный Калькулятор</h1>
 
-    <div class="input-group">
-        <label for="loanAmount">Сумма кредита</label>
-        <input type="number" id="loanAmount" value="170000" />
-    </div>
+  <div class="input-group">
+    <label for="loanAmount">Сумма кредита:</label>
+    <input type="number" id="loanAmount" value="170000" placeholder="Например, 170000" />
+  </div>
 
-    <div class="input-group">
-        <label for="firstPeriodRate">Процент первый период (первые полгода)</label>
-        <input type="number" id="firstPeriodRate" value="6" />
-    </div>
+  <div class="input-group">
+    <label for="initialRate">Процентная ставка первые 6 месяцев (%):</label>
+    <input type="number" id="initialRate" value="6" placeholder="6" />
+  </div>
 
-    <div class="input-group">
-        <label for="secondPeriodRate">Процент второй период (после 6 месяцев)</label>
-        <input type="number" id="secondPeriodRate" value="17.5" />
-    </div>
+  <div class="input-group">
+    <label for="laterRate">Процентная ставка после 6 месяцев (%):</label>
+    <input type="number" id="laterRate" value="17.5" placeholder="17.5" />
+  </div>
 
-    <button id="calculateBtn">Рассчитать</button>
+  <button onclick="startSimulation()">Начать расчёт</button>
 
-    <div id="simulator" class="hidden">
-        <h2>Результаты</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Месяц</th>
-                    <th>Платеж</th>
-                    <th>Проценты</th>
-                    <th>Основной долг</th>
-                    <th>Остаток долга</th>
-                    <th>Сумма выплачена</th>
-                </tr>
-            </thead>
-            <tbody id="paymentTable">
-                <!-- Результаты расчетов появятся здесь -->
-            </tbody>
-        </table>
-    </div>
+  <div id="simulator" class="hidden">
+    <table>
+      <thead>
+        <tr>
+          <th>Месяц</th>
+          <th>Остаток долга (₽)</th>
+          <th>Проценты (₽)</th>
+          <th>Мин. платёж (₽)</th>
+          <th>Ваш платёж (₽)</th>
+        </tr>
+      </thead>
+      <tbody id="logBody"></tbody>
+    </table>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            document.getElementById('calculateBtn').addEventListener('click', function() {
-                const loanAmount = parseFloat(document.getElementById('loanAmount').value);
-                const firstPeriodRate = parseFloat(document.getElementById('firstPeriodRate').value);
-                const secondPeriodRate = parseFloat(document.getElementById('secondPeriodRate').value);
+    <label for="paymentInput">Сколько вы платите в этом месяце?</label>
+    <input type="number" id="paymentInput" />
+    <button onclick="nextMonth()">Далее</button>
+  </div>
 
-                const monthsFirstPeriod = 6;
-                const monthsSecondPeriod = 12;
+  <script>
+    let loanAmount = 170000;
+    let months = 240;
+    let principalPerMonth = 0;
+    let balance = 0;
+    let month = 1;
+    let initialRate = 0.06; // Начальный процент по умолчанию 6%
+    let laterRate = 0.175; // Процент после первых 6 месяцев по умолчанию 17.5%
 
-                const monthlyRateFirstPeriod = firstPeriodRate / 100 / 12;
-                const monthlyRateSecondPeriod = secondPeriodRate / 100 / 12;
+    const logBody = document.getElementById("logBody");
 
-                let remainingAmount = loanAmount;
-                let totalPaid = 0;
-                let tableBody = document.getElementById('paymentTable');
-                tableBody.innerHTML = ''; // Очищаем таблицу перед расчетом
+    function logRow(month, balance, interest, minPayment, userPayment) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${month}</td>
+        <td>${balance.toFixed(2)}</td>
+        <td>${interest.toFixed(2)}</td>
+        <td>${minPayment.toFixed(2)}</td>
+        <td>${userPayment.toFixed(2)}</td>
+      `;
+      logBody.appendChild(tr);
+    }
 
-                // Платежи в первые 6 месяцев
-                for (let month = 1; month <= monthsFirstPeriod; month++) {
-                    let interestPayment = remainingAmount * monthlyRateFirstPeriod;
-                    let principalPayment = loanAmount / monthsFirstPeriod;
-                    let totalPayment = principalPayment + interestPayment;
+    function startSimulation() {
+      loanAmount = parseFloat(document.getElementById("loanAmount").value);
+      initialRate = parseFloat(document.getElementById("initialRate").value) / 100 || 0.06;
+      laterRate = parseFloat(document.getElementById("laterRate").value) / 100 || 0.175;
+      
+      if (isNaN(loanAmount) || loanAmount <= 0) {
+        alert("Введите корректную сумму кредита.");
+        return;
+      }
 
-                    remainingAmount -= principalPayment;
-                    totalPaid += totalPayment;
+      balance = loanAmount;
+      principalPerMonth = +(loanAmount / months).toFixed(2);
+      month = 1;
+      document.getElementById("simulator").classList.remove("hidden");
+      logBody.innerHTML = "";
+      showMonthInfo();
+    }
 
-                    let row = `<tr>
-                                <td>${month}</td>
-                                <td>${totalPayment.toFixed(2)}</td>
-                                <td>${interestPayment.toFixed(2)}</td>
-                                <td>${principalPayment.toFixed(2)}</td>
-                                <td>${remainingAmount.toFixed(2)}</td>
-                                <td>${totalPaid.toFixed(2)}</td>
-                            </tr>`;
-                    tableBody.innerHTML += row;
-                }
+    function getCurrentRate(month) {
+      return month <= 6 ? initialRate / 12 : laterRate / 12;
+    }
 
-                // Платежи на второй период (после 6 месяцев)
-                for (let month = monthsFirstPeriod + 1; month <= monthsFirstPeriod + monthsSecondPeriod; month++) {
-                    let interestPayment = remainingAmount * monthlyRateSecondPeriod;
-                    let principalPayment = loanAmount / monthsSecondPeriod;
-                    let totalPayment = principalPayment + interestPayment;
+    function showMonthInfo() {
+      const rate = getCurrentRate(month);
+      const interest = +(balance * rate).toFixed(2);
+      const minPayment = +(principalPerMonth + interest).toFixed(2);
+      document.getElementById("paymentInput").value = minPayment;
+    }
 
-                    remainingAmount -= principalPayment;
-                    totalPaid += totalPayment;
+    function nextMonth() {
+      const rate = getCurrentRate(month);
+      const interest = +(balance * rate).toFixed(2);
+      const payment = parseFloat(document.getElementById("paymentInput").value);
 
-                    let row = `<tr>
-                                <td>${month}</td>
-                                <td>${totalPayment.toFixed(2)}</td>
-                                <td>${interestPayment.toFixed(2)}</td>
-                                <td>${principalPayment.toFixed(2)}</td>
-                                <td>${remainingAmount.toFixed(2)}</td>
-                                <td>${totalPaid.toFixed(2)}</td>
-                            </tr>`;
-                    tableBody.innerHTML += row;
-                }
+      if (isNaN(payment) || payment <= 0) {
+        alert("Введите корректную сумму платежа.");
+        return;
+      }
 
-                // Показать результат
-                document.getElementById('simulator').classList.remove('hidden');
-            });
-        });
-    </script>
+      const toPrincipal = Math.max(payment - interest, 0);
+      balance = +(balance - toPrincipal).toFixed(2);
+      if (balance < 0) balance = 0;
+
+      const minPayment = +(principalPerMonth + interest).toFixed(2);
+      logRow(month, balance, interest, minPayment, payment);
+
+      if (balance <= 0) {
+        alert(`Кредит полностью погашен за ${month} месяцев!`);
+        document.getElementById("paymentInput").disabled = true;
+        return;
+      }
+
+      month++;
+      showMonthInfo();
+    }
+  </script>
 </body>
 </html>
